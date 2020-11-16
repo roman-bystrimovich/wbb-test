@@ -158,14 +158,16 @@ var NameParser = /** @class */ (function () {
                         return [3 /*break*/, 5];
                     case 4:
                         e_1 = _a.sent();
-                        if (e_1.errno != -2) {
+                        if (e_1.errno !== -2) {
                             throw e_1;
                         }
                         return [3 /*break*/, 5];
                     case 5:
                         stream = fs.createWriteStream(file);
                         for (key in this.names) {
-                            stream.write(key + ": " + this.names[key] + " \n");
+                            if (this.names.hasOwnProperty(key)) {
+                                stream.write(key + ": " + this.names[key] + " \n");
+                            }
                         }
                         stream.end();
                         return [2 /*return*/];
@@ -177,29 +179,21 @@ var NameParser = /** @class */ (function () {
     return NameParser;
 }());
 (function () { return __awaiter(void 0, void 0, void 0, function () {
-    var parser, error_1;
+    var parser;
     return __generator(this, function (_a) {
         switch (_a.label) {
             case 0:
                 parser = new NameParser();
-                _a.label = 1;
-            case 1:
-                _a.trys.push([1, 5, , 6]);
                 return [4 /*yield*/, parser.loadNames('first-names.txt')];
-            case 2:
+            case 1:
                 _a.sent();
                 return [4 /*yield*/, parser.countNames('oliver-twist.txt')];
-            case 3:
+            case 2:
                 _a.sent();
                 return [4 /*yield*/, parser.writeResult('counts.txt')];
-            case 4:
+            case 3:
                 _a.sent();
-                return [3 /*break*/, 6];
-            case 5:
-                error_1 = _a.sent();
-                console.log(error_1);
-                return [3 /*break*/, 6];
-            case 6: return [2 /*return*/];
+                return [2 /*return*/];
         }
     });
 }); })();

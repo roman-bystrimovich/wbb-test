@@ -7,9 +7,7 @@ class NameParser {
 
     private names: Record<string, number> = {};
 
-    constructor() {}
-
-    private async readWords(file: string, reader: Function, separator: RegExp | string = '\n'): Promise<void> {
+    private async readWords(file: string, reader: (word: string) => void, separator: RegExp | string = '\n'): Promise<void> {
         await fs.promises.access(file, fs.constants.R_OK);
 
         return new Promise((resolve, reject) => {
@@ -18,8 +16,8 @@ class NameParser {
             let rest: string = '';
 
             stream.on('data', (data: Buffer) => {
-                const chunk: string = rest + data.toString(); 
-                const wordsArray: Array<string> = chunk.split(separator);
+                const chunk: string = rest + data.toString();
+                const wordsArray: string[] = chunk.split(separator);
 
                 rest = wordsArray.pop() || '';
 
@@ -31,7 +29,7 @@ class NameParser {
             });
 
             stream.on('end', () => {
-                const wordsArray: Array<string> = rest.split(separator);
+                const wordsArray: string[] = rest.split(separator);
 
                 wordsArray.forEach((word: string) => {
                     if (word) {
@@ -75,15 +73,17 @@ class NameParser {
             await fs.promises.access(file, fs.constants.W_OK);
             await fs.promises.truncate(file);
         } catch (e: any) {
-            if (e.errno != -2) {
+            if (e.errno !== -2) {
                 throw e;
             }
         }
 
         const stream: any = fs.createWriteStream(file);
 
-        for (let key in this.names) {
-            stream.write(`${key}: ${this.names[key]} \n`);
+        for (const key in this.names) {
+            if (this.names.hasOwnProperty(key)) {
+                stream.write(`${key}: ${this.names[key]} \n`);
+            }
         }
 
         stream.end();
@@ -93,11 +93,7 @@ class NameParser {
 (async () => {
     const parser: NameParser = new NameParser();
 
-    try {
-        await parser.loadNames('first-names.txt');
-        await parser.countNames('oliver-twist.txt');
-        await parser.writeResult('counts.txt');
-    } catch(error: any) {
-        console.log(error);
-    }
+    await parser.loadNames('first-names.txt');
+    await parser.countNames('oliver-twist.txt');
+    await parser.writeResult('counts.txt');
 })();

@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "prebuild": "tslint -c tslint.json -p tsconfig.json --fix",
     "build": "tsc",
     "parse": "node dist/scripts/parser.js",
     "parse:ts": "ts-node src/scripts/parser.ts",
@@ -21,6 +22,7 @@
   "homepage": "https://github.com/roman-bystrimovich/wbb-test#readme",
   "devDependencies": {
     "ts-node": "^9.0.0",
+    "tslint": "^6.1.3",
     "typescript": "^4.0.5"
   },
   "dependencies": {
