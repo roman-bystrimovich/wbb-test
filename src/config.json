@@ -1,0 +1,8 @@
+{
+    "port": 8000,
+
+    "filesDir": "files",
+    "namesFile": "first-names.txt",
+    "sourceFile": "oliver-twist.txt",
+    "targetFile": "counts.txt"
+}

@@ -1,17 +1,17 @@
-import * as path from 'path';
-import * as fs from 'fs';
+import path from 'path';
+import fs from 'fs';
+
+import { filesDir, namesFile, sourceFile, targetFile } from '../config.json';
 
 class NameParser {
 
-    public static filesDir: string = 'files';
-
     private names: Record<string, number> = {};
 
-    private async readWords(file: string, reader: (word: string) => void, separator: RegExp | string = '\n'): Promise<void> {
-        await fs.promises.access(file, fs.constants.R_OK);
+    private async readWords(filePath: string, reader: (word: string) => void, separator: RegExp | string = '\n'): Promise<void> {
+        await fs.promises.access(filePath, fs.constants.R_OK);
 
         return new Promise((resolve, reject) => {
-            const stream: any = fs.createReadStream(file);
+            const stream: any = fs.createReadStream(filePath);
 
             let rest: string = '';
 
@@ -42,19 +42,19 @@ class NameParser {
         });
     }
 
-    public async loadNames(sourceFile: string): Promise<void> {
-        const file: string = path.resolve(NameParser.filesDir, sourceFile);
+    public async loadNames(fileName: string): Promise<void> {
+        const filePath: string = path.resolve(filesDir, fileName);
 
         this.names = {};
-        await this.readWords(file, (name: string) => {
+        await this.readWords(filePath, (name: string) => {
             this.names[name] = 0;
         });
     }
 
-    public async countNames(sourceFile: string): Promise<void> {
-        const file: string = path.resolve(NameParser.filesDir, sourceFile);
+    public async countNames(fileName: string): Promise<void> {
+        const filePath: string = path.resolve(filesDir, fileName);
 
-        await this.readWords(file, (word: string) => {
+        await this.readWords(filePath, (word: string) => {
             const changedWord: string = word.charAt(0) + word.slice(1).toLowerCase();
             if (this.names.hasOwnProperty(changedWord)) {
                 this.names[changedWord] = this.names[changedWord] + 1;
@@ -62,29 +62,39 @@ class NameParser {
         }, /[\.\,]?[\s\t\n]+/);
     }
 
-    public async writeResult(targetFile: string): Promise<void> {
+    public async writeResult(fileName: string): Promise<void> {
         if (Object.keys(this.names).length === 0) {
             throw new Error('Names are not specified');
         }
 
-        const file: string = path.resolve(NameParser.filesDir, targetFile);
+        const filePath: string = path.resolve(filesDir, fileName);
 
         try {
-            await fs.promises.access(file, fs.constants.W_OK);
-            await fs.promises.truncate(file);
+            await fs.promises.access(filePath, fs.constants.W_OK);
+            await fs.promises.truncate(filePath);
         } catch (e: any) {
             if (e.errno !== -2) {
                 throw e;
             }
         }
 
-        const stream: any = fs.createWriteStream(file);
+        const namesArray: { name: string, count: number }[] = [];
 
         for (const key in this.names) {
             if (this.names.hasOwnProperty(key)) {
-                stream.write(`${key}: ${this.names[key]} \n`);
+                namesArray.push({ name: key, count: this.names[key]});
             }
         }
+
+        const stream: any = fs.createWriteStream(filePath);
+
+        namesArray.sort((item1, item2) => item2.count - item1.count).forEach(({ name, count }, index) => {
+            if (index === 0) {
+                stream.write(`${name}:${count}`);
+            } else {
+                stream.write(`\n${name}:${count}`);
+            }
+        });
 
         stream.end();
     }
@@ -93,7 +103,7 @@ class NameParser {
 (async () => {
     const parser: NameParser = new NameParser();
 
-    await parser.loadNames('first-names.txt');
-    await parser.countNames('oliver-twist.txt');
-    await parser.writeResult('counts.txt');
+    await parser.loadNames(namesFile);
+    await parser.countNames(sourceFile);
+    await parser.writeResult(targetFile);
 })();

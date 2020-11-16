@@ -1,23 +1,4 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -54,23 +35,27 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
-var path = __importStar(require("path"));
-var fs = __importStar(require("fs"));
+var path_1 = __importDefault(require("path"));
+var fs_1 = __importDefault(require("fs"));
+var config_json_1 = require("../config.json");
 var NameParser = /** @class */ (function () {
     function NameParser() {
         this.names = {};
     }
-    NameParser.prototype.readWords = function (file, reader, separator) {
+    NameParser.prototype.readWords = function (filePath, reader, separator) {
         if (separator === void 0) { separator = '\n'; }
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, fs.promises.access(file, fs.constants.R_OK)];
+                    case 0: return [4 /*yield*/, fs_1.default.promises.access(filePath, fs_1.default.constants.R_OK)];
                     case 1:
                         _a.sent();
                         return [2 /*return*/, new Promise(function (resolve, reject) {
-                                var stream = fs.createReadStream(file);
+                                var stream = fs_1.default.createReadStream(filePath);
                                 var rest = '';
                                 stream.on('data', function (data) {
                                     var chunk = rest + data.toString();
@@ -96,16 +81,16 @@ var NameParser = /** @class */ (function () {
             });
         });
     };
-    NameParser.prototype.loadNames = function (sourceFile) {
+    NameParser.prototype.loadNames = function (fileName) {
         return __awaiter(this, void 0, void 0, function () {
-            var file;
+            var filePath;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        file = path.resolve(NameParser.filesDir, sourceFile);
+                        filePath = path_1.default.resolve(config_json_1.filesDir, fileName);
                         this.names = {};
-                        return [4 /*yield*/, this.readWords(file, function (name) {
+                        return [4 /*yield*/, this.readWords(filePath, function (name) {
                                 _this.names[name] = 0;
                             })];
                     case 1:
@@ -115,15 +100,15 @@ var NameParser = /** @class */ (function () {
             });
         });
     };
-    NameParser.prototype.countNames = function (sourceFile) {
+    NameParser.prototype.countNames = function (fileName) {
         return __awaiter(this, void 0, void 0, function () {
-            var file;
+            var filePath;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
-                        file = path.resolve(NameParser.filesDir, sourceFile);
-                        return [4 /*yield*/, this.readWords(file, function (word) {
+                        filePath = path_1.default.resolve(config_json_1.filesDir, fileName);
+                        return [4 /*yield*/, this.readWords(filePath, function (word) {
                                 var changedWord = word.charAt(0) + word.slice(1).toLowerCase();
                                 if (_this.names.hasOwnProperty(changedWord)) {
                                     _this.names[changedWord] = _this.names[changedWord] + 1;
@@ -136,23 +121,23 @@ var NameParser = /** @class */ (function () {
             });
         });
     };
-    NameParser.prototype.writeResult = function (targetFile) {
+    NameParser.prototype.writeResult = function (fileName) {
         return __awaiter(this, void 0, void 0, function () {
-            var file, e_1, stream, key;
+            var filePath, e_1, namesArray, key, stream;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
                         if (Object.keys(this.names).length === 0) {
                             throw new Error('Names are not specified');
                         }
-                        file = path.resolve(NameParser.filesDir, targetFile);
+                        filePath = path_1.default.resolve(config_json_1.filesDir, fileName);
                         _a.label = 1;
                     case 1:
                         _a.trys.push([1, 4, , 5]);
-                        return [4 /*yield*/, fs.promises.access(file, fs.constants.W_OK)];
+                        return [4 /*yield*/, fs_1.default.promises.access(filePath, fs_1.default.constants.W_OK)];
                     case 2:
                         _a.sent();
-                        return [4 /*yield*/, fs.promises.truncate(file)];
+                        return [4 /*yield*/, fs_1.default.promises.truncate(filePath)];
                     case 3:
                         _a.sent();
                         return [3 /*break*/, 5];
@@ -163,19 +148,28 @@ var NameParser = /** @class */ (function () {
                         }
                         return [3 /*break*/, 5];
                     case 5:
-                        stream = fs.createWriteStream(file);
+                        namesArray = [];
                         for (key in this.names) {
                             if (this.names.hasOwnProperty(key)) {
-                                stream.write(key + ": " + this.names[key] + " \n");
+                                namesArray.push({ name: key, count: this.names[key] });
                             }
                         }
+                        stream = fs_1.default.createWriteStream(filePath);
+                        namesArray.sort(function (item1, item2) { return item2.count - item1.count; }).forEach(function (_a, index) {
+                            var name = _a.name, count = _a.count;
+                            if (index === 0) {
+                                stream.write(name + ":" + count);
+                            }
+                            else {
+                                stream.write("\n" + name + ":" + count);
+                            }
+                        });
                         stream.end();
                         return [2 /*return*/];
                 }
             });
         });
     };
-    NameParser.filesDir = 'files';
     return NameParser;
 }());
 (function () { return __awaiter(void 0, void 0, void 0, function () {
@@ -184,13 +178,13 @@ var NameParser = /** @class */ (function () {
         switch (_a.label) {
             case 0:
                 parser = new NameParser();
-                return [4 /*yield*/, parser.loadNames('first-names.txt')];
+                return [4 /*yield*/, parser.loadNames(config_json_1.namesFile)];
             case 1:
                 _a.sent();
-                return [4 /*yield*/, parser.countNames('oliver-twist.txt')];
+                return [4 /*yield*/, parser.countNames(config_json_1.sourceFile)];
             case 2:
                 _a.sent();
-                return [4 /*yield*/, parser.writeResult('counts.txt')];
+                return [4 /*yield*/, parser.writeResult(config_json_1.targetFile)];
             case 3:
                 _a.sent();
                 return [2 /*return*/];
